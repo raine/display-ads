@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+docker build -t rainevi/display-ads .
+docker push rainevi/display-ads

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+murobbs() {
+  curl -s 'https://murobbs.muropaketti.com/forums/naeytoet-tulostimet-ja-muut-lisaelaitteet.207/index.rss?prefix_id=8' |\
+    xml2json |\
+    ramda '.rss.channel.item' 'project [\title, \pubDate, \link]' 'map assoc \source \murobbs'
+}
+
+iotech() {
+  curl -s 'https://bbs.io-tech.fi/forums/naeytoet-ja-videotykit.31/index.rss?prefix_id=1' |\
+    xml2json |\
+    ramda '.rss.channel.item' 'project [\title, \pubDate, \link]' 'map assoc \source \iotech'
+}
+
+tori() {
+  tori_html=$(curl -s 'https://www.tori.fi/koko_suomi?q=144hz&cg=0&w=3&xtatc=INT-166')
+  dates_json=$(echo $tori_html | pup 'div.item_row[id*=item] .date_image json{}' | ramda 'pluck \text' 'map assoc \pubDate, _, {}')
+  items_json=$(echo $tori_html | pup 'div.item_row[id*=item] .desc a json{}' | ramda --import he 'map (-> title: he.decode(it.text), link: he.decode(it.href))')
+  (echo $dates_json; echo $items_json) | ramda '-> zip ...it' 'map mergeAll' 'map assoc \source \tori' --slurp
+}
+
+(murobbs && iotech && tori) |\
+  ramda --slurp unnest 'sort descend (x) -> new Date(x.pubDate)' |\
+  html-table \
+    --generated-at \
+    --col.title.filterable \
+    --col.title.cell '<a href="${link}">${title}</a>' \
+    --col.source.width 100 \
+    --col.pubDate.width 300 \
+    --cols 'title,source,pubDate'
