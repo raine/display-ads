@@ -29,4 +29,5 @@ tori() {
     --col.title.cell '<a href="${link}">${title}</a>' \
     --col.source.width 100 \
     --col.pubDate.width 300 \
+    --col.pubDate.parse '(x, row) => row.source !== "tori" ? new Date(x) : x' \
     --cols 'title,source,pubDate'
