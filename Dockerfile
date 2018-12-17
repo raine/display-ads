@@ -14,7 +14,7 @@ COPY --from=node /usr/local/bin /usr/local/bin
 COPY --from=node /usr/local/share/.config /usr/local/share/.config
 COPY --from=node /usr/local/share/.cache /usr/local/share/.cache
 COPY --from=base /go/bin/pup /bin/pup
-RUN cd $HOME && yarn add he
+RUN cd $HOME && yarn add he parse-tori-datetime
 ENV PATH="/home/root/.yarn/bin:$PATH"
 WORKDIR app/
 COPY run .
